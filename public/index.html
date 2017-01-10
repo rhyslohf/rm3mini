@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <title>RM3 Control</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+        <script src="js/jquery-3.1.1.min.js"></script>
+        <script src="js/bootstrap-3.3.7.min.js"></script>
+        <script src="js/angular-1.5.6.min.js"></script>
+
+        <link href="css/bootstrap-3.3.7.min.css" rel="stylesheet">
+        <link href="css/bootstrap-flatly.min.css" rel="stylesheet">
+    </head>
+
+    <style>
+        .btn-faded { opacity: 0.5 }
+		.row { border:0!important;}
+    </style>
+
+    <body>
+
+    <div class="container" ng-app="rm3" ng-controller="ctrl">
+        <h1 class="text-center">Aircon</h1>
+        <h1 class="lead text-center" ng-if="switching_off">Aircon is scheduled to switch off in {{switching_off}}</h1>
+        
+		<div class="text-center">
+			<button class="btn btn-success" ng-click="onoff()"><h2>On/Off</h2></button>
+		</div>
+		
+		<div class="row">
+			<h2 class="text-center">Temp</h2>
+
+			<div class="text-center">
+				<button class="btn btn-default" ng-click="temperature_set(-1)">Fan</button>
+				<button class="btn btn-success" ng-click="temperature_set(20)">20</button>
+				<button class="btn btn-warning" ng-click="temperature_set(22)">22</button>
+				<button class="btn btn-danger" ng-click="temperature_set(24)">24</button>
+			</div>
+
+			<br/>
+		</div>
+		
+		<div class="row">
+			<h2 class="text-center">Fan Speed</h2>
+
+			<div class="text-center">
+				<button class="btn btn-default" ng-click="fanspeed_set('auto')">Auto</button>
+				<button class="btn btn-success" ng-click="fanspeed_set('min')">Min</button>
+				<button class="btn btn-warning" ng-click="fanspeed_set('med')">Med</button>
+				<button class="btn btn-danger" ng-click="fanspeed_set('max')">Max</button>
+			</div>
+		</div>
+		
+		<div class="row">
+			<h2 class="text-center">Type</h2>
+
+			<div class="text-center">
+				<button class="btn btn-default" ng-click="fantype_set('auto')">Auto</button>
+				<button class="btn btn-success" ng-click="fantype_set('cool')">Cool</button>
+				<button class="btn btn-danger" ng-click="fantype_set('heat')">Heat</button>
+			</div>
+		</div>
+		
+		<div class="row">
+			<h2 class="text-center">Timer Off</h2>	
+			<div ng-if="!switching_off">
+				<table class="table ">
+					
+					<tr>
+						<td class="text-right"><button class="btn" ng-click="timer_set(15*60)">15 mins</button></td>
+						<td class="text-left"><button class="btn" ng-click="timer_set(30*60)">30 mins</button></td>
+					</tr>
+					<tr>
+						<td class="text-right"><button class="btn" ng-click="timer_set(45*60)">45 mins</button></td>
+						<td class="text-left"><button class="btn" ng-click="timer_set(60*60)">60 mins</button></td>
+					</tr>
+						
+				</table>
+				<!-- test -->
+				<button class="btn" ng-click="timer_set(15)">15 seconds</button>
+			</div>
+
+			<div ng-if="switching_off" class="text-center">
+				<button class="btn btn-warning" ng-click="timer_cancel()">Cancel Auto-off</button>
+			</div>
+		</div>
+		
+    </div>
+
+    <script>
+
+    var app = angular.module('rm3', []);
+
+    app.factory('remote', function ($http) {
+        return {
+			init: function(c,e) {
+				c = c || function() {};
+				e = e || function() {};
+				$http.get('/init').
+					success(c).error(e);
+			},
+			onoff: function(c,e) {
+				c = c || function() {};
+				e = e || function() {};
+				$http.get('/aircon/onoff').
+					success(c).error(e);
+			},
+			onoff_timer: function(t,c,e) {
+				c = c || function() {};
+				e = e || function() {};
+				$http.get('/aircon/onoff/timer/'+t).
+					success(c).error(e);
+			},
+            temperature: function(t,c,e) {
+				c = c || function() {};
+				e = e || function() {};
+				$http.get('/aircon/temperature/'+t).
+					success(c).error(e);
+			},
+			fanspeed: function(s,c,e) {
+				c = c || function() {};
+				e = e || function() {};
+				$http.get('/aircon/fanspeed/'+s).
+					success(c).error(e);
+			},
+			fantype: function(s,c,e) {
+				c = c || function() {};
+				e = e || function() {};
+				$http.get('/aircon/fantype/'+s).
+					success(c).error(e);
+			}
+        };
+    });
+
+    app.controller("ctrl", ["$scope", "$http", "$interval", "remote", 
+      function($scope, $http, $interval, remote) {
+          
+		  $scope.onoff = function(temp) {
+            console.log('onoff');
+            remote.onoff();
+          };
+		  
+		  $scope.temperature_set = function(temp) {
+            console.log('set temp to '+temp);
+            remote.temperature(temp);
+          };
+          
+          $scope.fanspeed_set = function(speed) {
+            console.log('set fanspeed to '+speed);
+            remote.fanspeed(speed);
+          };
+		  
+		  $scope.fantype_set = function(type) {
+            console.log('set fantype to '+type);
+            remote.fantype(type);
+          };
+          
+          $scope.timer_set = function(timer_seconds) {
+              console.log('start timer in '+timer_seconds);
+			  remote.onoff_timer(timer_seconds, function() {
+				remote.init($scope.init, function(){ console.log('error!'); });
+			  });
+          };
+		  
+          $scope.timer_cancel = function() {
+              console.log('cancel timer');
+			  remote.onoff_timer(-1, function() {
+				  remote.init($scope.init, function(){ console.log('error!'); });
+			  });
+          };
+
+		  $scope.init = function(data) {
+			// once we have the initial data
+			// if we have a timeout period, store it and reduce it each second
+			if (data.switching_off != -1) $scope.switching_off = data.switching_off;
+			else $scope.switching_off = undefined;
+			
+			if (!$scope.interval) {
+				$scope.interval = $interval(function() {
+					console.log('tick');
+					if (!$scope.switching_off) return;
+					else if ($scope.switching_off < 0) $scope.switching_off = undefined;
+					else $scope.switching_off -= 1;
+				},1000);
+			}
+		  };
+		  
+		  // get the initial data
+		  remote.init($scope.init, function(){ console.log('error!'); });
+          
+          
+    }]);
+
+    </script>
+    </body>
+</html>

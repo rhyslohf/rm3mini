@@ -1,0 +1,27 @@
+#install pip
+wget https://bootstrap.pypa.io/get-pip.py
+python get-pip.py
+
+#install python dev
+apt-get install python-dev
+
+#if windows
+#wget https://www.microsoft.com/en-us/download/details.aspx?id=44266
+#Run VCforPython27.msi
+
+#install dependencies
+python -m pip install configparser
+python -m pip install netaddr
+python -m pip install pycrypto
+
+
+#Download python-broadlink package - you can find it on the github by the package name (github user: mjg59)
+wget https://github.com/mjg59/python-broadlink/archive/master.zip
+unzip master.zip -d /tmp/python-broadlink
+rm -rf master.zip
+python /tmp/python-broadlink/setup.py install
+
+#Download BlackBeanControl
+wget https://github.com/davorf/BlackBeanControl/archive/master.zip
+unzip master.zip -d /tmp/blackbeancontrol
+rm -rf master.zip

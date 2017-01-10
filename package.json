@@ -1,0 +1,17 @@
+{
+  "name": "",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/host.js",
+  "dependencies": {
+    "express": "^4.14.0",
+    "python-shell": "^0.4.0",
+    "request": "^2.76.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server/host.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
